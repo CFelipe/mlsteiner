@@ -1,0 +1,202 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel} % Hifenização e dicionário
+\usepackage[left=3.00cm, right=2.00cm, top=3.00cm, bottom=2.00cm]{geometry}
+\usepackage{enumitem} % Para itemsep etc
+\usepackage{longtable} % Dependência do longtabu
+\usepackage{tabu} % Para melhor criação de tabelas
+\usepackage{listings} % Para códigos
+\usepackage{lstautogobble} % Códigos indentados corretamente
+\usepackage{color} % Para coloração de códigos
+\usepackage{zi4} % Para fonte de códigos
+\usepackage{parskip} % Linha em branco entre parágrafos em vez de recuo
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{verbatim}
+\usepackage[autostyle]{csquotes}
+\usepackage[breaklinks]{hyperref}
+
+\usepackage{listings}
+\lstset{
+    autogobble,
+    columns=fullflexible,
+    showspaces=false,
+    keepspaces=true,
+    showtabs=true,
+    breaklines=true,
+    showstringspaces=false,
+    breakatwhitespace=true,
+    escapeinside={(*@}{@*)},
+    commentstyle=\color{greencomments},
+    keywordstyle=\color{bluekeywords},
+    stringstyle=\color{redstrings},
+    numberstyle=\color{graynumbers},
+    basicstyle=\ttfamily\footnotesize,
+    frame=l,
+    framesep=12pt,
+    xleftmargin=12pt,
+    tabsize=4,
+    captionpos=b,
+}
+
+\newcommand{\ic}[1]{\textbf{\lstinline{#1}}}
+
+\DeclareGraphicsExtensions{.pdf}
+
+\begin{document}
+
+\begin{center}
+    \textsc{Universidade Federal do Rio Grande do Norte} \\
+    \textsc{Departamento de Informática e Matemática Aplicada}
+\end{center}
+
+\bigskip
+
+\begin{tabular}{@{}ll@{}}
+    \emph{Disciplina:} & DIM0406 --- Algoritmos Avançados \\
+    \emph{Docente:}    & Sílvia Maria Diniz Monteiro Maia \\
+    \emph{Discente:}   & Felipe Cortez de Sá \\
+\end{tabular}
+
+\bigskip
+
+\begin{center}
+\large \textbf{Algoritmo exato para problema de Steiner com rotulação mínima}
+\end{center}
+
+\section{Introdução}
+Neste relatório é apresentado o problema da árvore de Steiner com rotulação
+mínima e um algoritmo exato para resolvê-lo baseado na técnica do
+\emph{branch and bound}, sugerida por Consoli et al \cite{consoli}.
+
+\section{Problema}
+O problema de Steiner com rotulação mínima é a junção de dois problemas
+similares: \emph{Minimum Labelling Spanning Tree}, que busca uma árvore
+geradora para um grafo $ G = (V, E, L) $ utilizando a menor quantidade de
+rótulos possível, e o problema da árvore de Steiner, que busca num grafo
+ponderado $ G = (V, E, w) $ uma árvore que conecta determinados vértices
+básicos $ Q \subseteq V $ minimizando o custo das arestas. A combinação desses
+problemas consiste em achar uma árvore que contenha todos os vértices básicos $
+Q $ utilizando o menor número de rótulos possível.
+
+Formalmente, dado um grafo $ G = (V, E, L) $, sendo $ V $ o conjunto de
+vértices, $ E $ o conjunto de arestas, $ L $ o conjunto de rótulos para as
+arestas e $ Q \subseteq V $ um conjunto de vértices básicos, uma árvore de
+Steiner com rotulação mínima contém todos os vértices básicos conectados
+possivelmente utilizando os vértices não básicos $ V - Q $ minimizando o número
+de rótulos utilizados.
+
+
+O algoritmo tem aplicações na área de construção de circuitos \emph{VLSI}, em
+que se deseja minimizar o cabeamento utilizado para conectar pinos,
+telecomunicações, engenharia civil, entre outros \cite{robins}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.50\textwidth]{graph_1}
+    \caption{Um exemplo do problema com 10 vértices, 3 deles básicos e 3 cores}
+    \label{fig:graph_1}
+\end{figure}
+
+\section{Algoritmo e técnica de solução}
+O algoritmo foi implementado utilizando \emph{C} em um único arquivo
+\ic{steiner.c} que não recebe entrada (já que seus casos de teste são gerados
+automaticamente) e que gera como saída dois arquivos \ic{.dot}, que podem ser
+transformados em uma visualização do grafo inicial e final através do programa
+\ic{graphviz} \cite{graphviz}.
+
+O funcionamento é baseado no algoritmo exato descrito por Consoli et al, que
+adiciona a técnica de \emph{branch and bound} ao algoritmo guloso proposto por
+Cerulli et al. \cite{cerulli}
+
+%if (*@ $ \lvert C \rvert  < \lvert C^* \rvert $ @*) {
+\begin{lstlisting}[caption=Pseudocódigo]
+(*@$C = \{\}$@*)
+(*@$H = (V, E(C)), E(C) = \{e \in E : L(e) \in C\}$@*)
+(*@$C^* = L $@*)
+(*@$H^* = (V, E(C^*)), E(C^*) = \{e \in E : L(e) \in C\}$@*)
+(*@$Comp(C) $@*) // componentes conexos de (*@ (Q, E(C)) @*)
+
+Test(C) {
+    if ((*@$ |C| < |C^*| $@*)) {
+        if ((*@$ Comp(C) = 1 $@*)) {
+            (*@$ C^* \leftarrow C $@*)
+        } else if ((*@$ |C| < |C^*| - 1 $@*)) {
+            for each ((*@$ c \in (L - C) $@*)) {
+                Test((*@$ C \cup \{ c \} $@*))
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+O algoritmo adiciona uma nova cor a cada chamada do procedimento \ic{Test},
+permitindo a exploração do espaço de busca. $ C^* $ guarda a melhor solução até
+o momento numa variável global e $ |C^*| $ informa quantos rótulos essa melhor
+solução possui. A poda (ou \emph{bound}) é feita pela comparação $ |C| < |C^*|
+- 1 $, que ao ser avaliada como falsa significa que ao adicionar uma nova cor a
+$ |C| $, sua cardinalidade será igual à da melhor solução, isto é, não se terá uma
+solução melhor e portanto não adianta explorar mais soluções a partir do
+conjunto $ C $.
+
+\ic{Comp(C)} é calculado através de uma busca em profundidade.
+
+Após executar \ic{Test}, tem-se $ C^* $ atualizado com a melhor combinação de
+rótulos que garantem apenas um componente conexo contendo todos os vértices
+básicos $ Q $.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.50\textwidth]{graph_2}
+    \caption{Grafo com arestas em $ C^* $}
+    \label{fig:graph_2}
+\end{figure}
+
+Para encontrar uma solução, basta achar uma árvore geradora desse grafo e
+remover arestas não básicas $ V - Q $ com grau 1.
+
+\section{Casos teste}
+Os casos de teste são gerados automaticamente de acordo com quatro parâmetros
+\begin{itemize}
+\item \ic{SIZE}, a quantidade de vértices do grafo
+\item \ic{COLORS}, a quantidade de rótulos (ou cores) em $ L $
+\item \ic{DENSITY}, valor de 0 a 100 que define a quantidade de arestas
+\item \ic{BASIC}, a quantidade de vértices básicos
+\end{itemize}
+
+\section{Resultados}
+Não foi possível testar extensamente e comparar a eficiência do algoritmo para
+casos grandes.
+
+\begin{thebibliography}{9}
+
+\bibitem{consoli}
+S. Consoli, K. Darby-Dowman, N. Mladenovic, J.A. Moreno-Perez.
+\textit{Variable neighbourhood search for the minimum labelling Steiner tree
+problem}.
+Annals of Operations Research, 2009.
+\tiny
+\\\texttt{\url{https://www.researchgate.net/publication/225327721_Variable_neighbourhood_search_for_the_minimum_labelling_Steiner_tree_problem}}
+\normalsize
+
+\bibitem{robins}
+G. Robins, A. Zelikovsky.
+\textit{Minimum Steiner Tree Construction}.
+\tiny
+\\\texttt{\url{http://www.cs.virginia.edu/~robins/papers/Steiner_chapter.pdf}}
+\normalsize
+
+\bibitem{graphviz}
+\textit{Graphviz --- Graph Visualization Software}. \\
+\url{http://www.graphviz.org/}
+
+\bibitem{cerulli}
+R. Cerulli, A. Fink, M. Gentili e S. Voß.
+\textit{Extensions of the minimum labelling spanning tree problem}.
+Journal of Telecommunications and Information Technology, 2006.
+\tiny
+\\\texttt{\url{https://www.researchgate.net/publication/228668519_Extensions_of_the_minimum_labelling_spanning_tree_problem}}
+\normalsize
+\end{thebibliography}
+
+\end{document}

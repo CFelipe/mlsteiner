@@ -1,0 +1,146 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel} % Hifenização e dicionário
+\usepackage[left=3.00cm, right=2.00cm, top=3.00cm, bottom=2.00cm]{geometry}
+\usepackage{enumitem} % Para itemsep etc
+\usepackage{longtable} % Dependência do longtabu
+\usepackage{tabu} % Para melhor criação de tabelas
+\usepackage{listings} % Para códigos
+\usepackage{lstautogobble} % Códigos indentados corretamente
+\usepackage{color} % Para coloração de códigos
+\usepackage{zi4} % Para fonte de códigos
+\usepackage{parskip} % Linha em branco entre parágrafos em vez de recuo
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{verbatim}
+\usepackage[autostyle]{csquotes}
+\usepackage[breaklinks]{hyperref}
+
+\usepackage{listings}
+\lstset{
+    autogobble,
+    columns=fullflexible,
+    showspaces=false,
+    keepspaces=true,
+    showtabs=true,
+    breaklines=true,
+    showstringspaces=false,
+    breakatwhitespace=true,
+    escapeinside={(*@}{@*)},
+    commentstyle=\color{greencomments},
+    keywordstyle=\color{bluekeywords},
+    stringstyle=\color{redstrings},
+    numberstyle=\color{graynumbers},
+    basicstyle=\ttfamily\footnotesize,
+    frame=l,
+    framesep=12pt,
+    xleftmargin=12pt,
+    tabsize=4,
+    captionpos=b,
+}
+
+\newcommand{\ic}[1]{\textbf{\lstinline{#1}}}
+
+\DeclareGraphicsExtensions{.pdf}
+
+\begin{document}
+
+\begin{center}
+    \textsc{Universidade Federal do Rio Grande do Norte} \\
+    \textsc{Departamento de Informática e Matemática Aplicada}
+\end{center}
+
+\bigskip
+
+\begin{tabular}{@{}ll@{}}
+    \emph{Disciplina:} & DIM0406 --- Algoritmos Avançados \\
+    \emph{Docente:}    & Sílvia Maria Diniz Monteiro Maia \\
+    \emph{Discente:}   & Felipe Cortez de Sá \\
+\end{tabular}
+
+\bigskip
+
+\begin{center}
+\large \textbf{GRASP-VNS aplicado ao problema de Steiner com rotulação mínima}
+\end{center}
+
+\section{Introdução}
+Neste relatório é apresentado um algoritmo metaheurístico para resolver o
+problema da árvore de Steiner com rotulação mínima. O algoritmo é uma
+combinação do \emph{Greedy Randomized Adaptative Search Procedure} apresentado
+por Consoli et al \cite{consoli} com sua fase de busca local substituída por
+uma \emph{Variable Neighbourhood Search}. Os resultados são comparados com o
+algoritmo exato implementado na primeira unidade, é feita uma análise de
+complexidade, é descrito como são gerados os casos de teste, uma tabela mostra
+os resultados obtidos para uma média de dez execuções de caso de teste. Além
+disso, é feito um adendo para o relatório do primeiro trabalho, apresentando os
+resultados previamente faltantes a conclusão.
+
+\section{Metaheurísticas utilizadas}
+\subsection{GRASP}
+O \emph{Greedy Randomized Adaptative Search Procedure} é comumente utilizado em
+problemas de otimização combinatória. A cada iteração, é realizada uma fase de
+construção, em que se gera uma solução para o problema e posteriormente uma
+fase de busca local, procurando um mínimo local na vizinhança da solução
+gerada. Se a melhor solução global é encontrada na iteração, atualiza-se a
+variável que contém a melhor solução. As duas fases são repetidas até o
+critério de parada ser satisfeito, podendo ser o número de iterações ou o tempo
+de execução, por exemplo. Na fase de construção, é criada uma lista de
+candidatos restritos,
+função gulosa, restricted candidate list possui os candidatos cujos elementos
+adicionados minimizam os custos incrementais. O elemento é selecionado
+aleatoriamente da RCL.
+inicialização múltipla.
+
+\subsection{VNS}
+O \emph{Variable Neighbourhood Search} faz uso de múltiplas estruturas de
+vizinhança, explorando vizinhanças cada vez mais distantes e maiores assim que
+o ótimo local é obtido por uma dessas vizinhanças. 
+
+\section{Metaheurística aplicada ao problema}
+
+\section{Complexidade}
+
+\section{Casos teste utilizados}
+Os casos teste utilizados são gerados automaticamente por um programa separado
+de acordo com parâmetros de entrada. Os parâmetros são \ic{SIZE}, a quantidade
+de nós do grafo, \ic{COLORS}, o número de rótulos, \ic{DENSITY}, a proporção de
+arestas para cada nó, e \ic{BASIC}, a quantidade de nós básicos. \ic{DENSITY}
+funciona percorrendo a matriz de adjacência que representa o grafo e de acordo
+com a probabilidade definida (sendo 0 e 100 equivalentes a 0\% e 100\%,
+respectivamente) adicionando ou não uma aresta de rotulação aleatória ligando
+dois nós. O arquivo gerado é então passado para o programa principal.
+
+\section{Resultados}
+
+\section{Correções do primeiro trabalho}
+
+\begin{thebibliography}{9}
+
+\bibitem{consoli}
+S. Consoli, K. Darby-Dowman, N. Mladenovic, J.A. Moreno-Perez.
+\textit{Variable neighbourhood search for the minimum labelling Steiner tree
+problem}.
+Annals of Operations Research, 2009.
+\tiny
+\\\texttt{\url{https://www.researchgate.net/publication/225327721_Variable_neighbourhood_search_for_the_minimum_labelling_Steiner_tree_problem}}
+\normalsize
+
+\bibitem{graphviz}
+\textit{Graphviz --- Graph Visualization Software}. \\
+\url{http://www.graphviz.org/}
+
+\bibitem{handbook}
+Glover, F., Kochenberger, G. A. et al.
+\textit{Handbook of Metaheuristics}.
+Kluwer Academic Publishers
+\tiny
+\normalsize
+
+\bibitem{executiontime}
+\textit{Stack Overflow --- Execution time of a C program}. \\
+\url{http://stackoverflow.com/questions/5248915/execution-time-of-c-program}
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,22 @@
+- VNS
+- Simulated annealing
+- Reactive tabu
+- Pilot
+
+~~
+
+- Pilot
+- GRASP
+- Particle Swarm
+- VNS
+- VNS com Group swap
+
+~
+
+- GRASP com VNS
+- Tabu com VNS
+- PSO com arquitetura de hibridização de heurísticas
+  - Própria direção: busca local
+  - Direção ao otimo local
+  - Direção ao ótimo global
+  - Plasmídeo do transgenético

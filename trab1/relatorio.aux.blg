@@ -1,0 +1,5 @@
+[0] Config.pm:343> INFO - This is Biber 2.5
+[0] Config.pm:346> INFO - Logfile is 'relatorio.aux.blg'
+[80] biber-darwin:290> INFO - === Thu Oct  6, 2016, 02:00:28
+[99] Utils.pm:165> ERROR - Cannot find control file 'relatorio.aux.bcf'! - did you pass the "backend=biber" option to BibLaTeX?
+[100] Biber.pm:112> INFO - ERRORS: 1
