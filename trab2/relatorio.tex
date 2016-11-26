@@ -71,10 +71,11 @@ combinação do \emph{Greedy Randomized Adaptative Search Procedure} apresentado
 por Consoli et al \cite{consoli} com sua fase de busca local substituída por
 uma \emph{Variable Neighbourhood Search}. Os resultados são comparados com o
 algoritmo exato implementado na primeira unidade, é feita uma análise de
-complexidade, é descrito como são gerados os casos de teste, uma tabela mostra
-os resultados obtidos para uma média de dez execuções de caso de teste. Além
-disso, é feito um adendo para o relatório do primeiro trabalho, apresentando os
-resultados previamente faltantes a conclusão.
+complexidade procurando identificar os bottlenecks, é descrito como são gerados
+os casos de teste, uma tabela mostra os resultados obtidos para uma média de
+dez execuções de caso de teste. Além disso, é feito um adendo para o relatório
+do primeiro trabalho, apresentando os resultados previamente faltantes à
+conclusão.
 
 \section{Metaheurísticas utilizadas}
 \subsection{GRASP}
@@ -95,25 +96,41 @@ inicialização múltipla.
 \subsection{VNS}
 O \emph{Variable Neighbourhood Search} faz uso de múltiplas estruturas de
 vizinhança, explorando vizinhanças cada vez mais distantes e maiores assim que
-o ótimo local é obtido por uma dessas vizinhanças. 
+o ótimo local é obtido por uma dessas vizinhanças. As diferentes vizinhanças
+são $ K_n $ e a vizinhança mais distante (normalmente de cardinalidade maior)
+é $ K_{max} $.
 
 \section{Metaheurística aplicada ao problema}
 
 \section{Complexidade}
 
 \section{Casos teste utilizados}
-Os casos teste utilizados são gerados automaticamente por um programa separado
-de acordo com parâmetros de entrada. Os parâmetros são \ic{SIZE}, a quantidade
-de nós do grafo, \ic{COLORS}, o número de rótulos, \ic{DENSITY}, a proporção de
-arestas para cada nó, e \ic{BASIC}, a quantidade de nós básicos. \ic{DENSITY}
-funciona percorrendo a matriz de adjacência que representa o grafo e de acordo
-com a probabilidade definida (sendo 0 e 100 equivalentes a 0\% e 100\%,
-respectivamente) adicionando ou não uma aresta de rotulação aleatória ligando
-dois nós. O arquivo gerado é então passado para o programa principal.
+Os casos teste utilizados são gerados automaticamente por um programa
+\ic{generate.c} de acordo com parâmetros de entrada. Os parâmetros são
+\ic{SIZE}, a quantidade de nós do grafo, \ic{COLORS}, o número de rótulos,
+\ic{DENSITY}, a proporção de arestas para cada nó, e \ic{BASIC}, a quantidade
+de nós básicos. \ic{DENSITY} funciona percorrendo a matriz de adjacência que
+representa o grafo e de acordo com a probabilidade definida (sendo 0 e 100
+equivalentes a 0\% e 100\%, respectivamente) adicionando ou não uma aresta de
+rotulação aleatória ligando dois nós. O arquivo gerado é então passado para o
+programa principal.
+
+A fim de comparar os resultados com o trabalho realizado por Consoli
+\cite{consoli}, os parâmetros dos testes são os mesmos, isto é, tem-se uma
+combinação entre \ic{DENSITY} $ \in \{80, 50, 20\} $, e para \ic{SIZE} $ = 100 $,
+\ic{COLORS} $ \in \{25, 50, 100, 125\} $, para \ic{SIZE} $ = 500 $, \ic{COLORS}
+$ \in \{125, 250, 500, 625\} $. \ic{BASIC} recebe $ 20\% $ de \ic{SIZE}, isto é,
+20 e 100, respectivamente.
+
+O código que gera os arquivos de caso teste para os parâmetros desejados está
+em \ic{generate.py}.
 
 \section{Resultados}
 
 \section{Correções do primeiro trabalho}
+\subsection{Técnica utilizada}
+\subsection{Resultados}
+\subsection{Conclusão}
 
 \begin{thebibliography}{9}
 
