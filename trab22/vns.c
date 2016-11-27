@@ -66,8 +66,6 @@ void shaking(int size, int graph[size][size], int colors, int col[colors], int k
         col[rcl[rand() % alpha]] = 1;
     }
 
-    printf("shaking final comp: %i\n", comp(size, graph, colors, col));
-
     //for(int i = 0; i < colors; ++i) { printf("%i | ", col[i]); }
     //printf("\n");
 }
@@ -86,15 +84,16 @@ void vns(int size, int graph[size][size], int colors, int col[colors]) {
 
     // De Consoli et al: according to our experiments, (|C| + |C|/3) is the best choice
     int new_card;
-    int card_col = card(colors, col);
+    int card_col = colors;
     int kmax = card_col * (4.0f / 3.0f);
     while(no_improv < 3) {
         k = 1;
         while(k <= kmax) {
             printf("shaking (k: %i / kmax: %i | %i)\n", k, kmax, no_improv);
             shaking(size, graph, colors, col2, k);
-            local(size, graph, colors, col);
+            local(size, graph, colors, col2);
             new_card = card(colors, col2);
+            printf("new_card: %i vs %i\n", new_card, card_col);
             if(new_card < card_col) {
                 for(int i = 0; i < colors; ++i) { col[i] = col2[i]; }
                 card_col = card(colors, col2);

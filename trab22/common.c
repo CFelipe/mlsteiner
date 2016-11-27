@@ -203,6 +203,8 @@ void local(int size, int graph[size][size], int colors, int col[colors]) {
      * verificar se após a remoção ainda tem-se um grafo conexo, isto é,
      * comp(c) = 1 */
 
+    int count = 0;
+
     for(int i = 0; i < colors; ++i) {
         if(col[i] == 1) {
             col[i] = 0;
@@ -211,13 +213,13 @@ void local(int size, int graph[size][size], int colors, int col[colors]) {
                 // volta
                 col[i] = 1;
             } else {
-                printf("> ");
+                ++count;
             }
         }
     }
 
-    //printf("%i\n", card(colors, col));
-    //printf("---\n");
+    printf("LS dropped %i colors\n", count);
+    printf("---\n");
 }
 
 void out(char *name, int size, int graph[size][size], int colors, int col[colors]) {
