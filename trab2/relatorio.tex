@@ -32,7 +32,7 @@
     stringstyle=\color{redstrings},
     numberstyle=\color{graynumbers},
     basicstyle=\ttfamily\footnotesize,
-    frame=l,
+    frame=single,
     framesep=12pt,
     xleftmargin=12pt,
     tabsize=4,
@@ -101,6 +101,72 @@ são $ K_n $ e a vizinhança mais distante (normalmente de cardinalidade maior)
 é $ K_{max} $.
 
 \section{Metaheurística aplicada ao problema}
+\subsection{GRASP}
+\begin{lstlisting}[caption=Pseudocódigo para GRASP, basicstyle=\ttfamily\scriptsize]
+grasp(limite) {
+    col* = {}
+    int no_improv = 0
+
+    while(no_improv < limite) {
+        col = {}
+        construct(col)
+        local(col) ou vns(col)
+        if(card(col) < card(col*)) {
+            col* = col
+            no_improv = 0
+        } else {
+            ++no_improv
+        }
+    }
+}
+
+construct() {
+    if(iteration > 2) {
+        rcl = {1, 1, ... , 1}
+        col[random()] = 1
+    } else {
+        rcl = {0, 0, ... , 0}
+    }
+
+    while(comp(c) > 1) {
+        rcl = argmin comp(c)
+        col = col (*@$\cup$@*) rcl[random()]
+    }
+}
+\end{lstlisting}
+
+\subsection{VNS}
+\begin{lstlisting}[caption=Pseudocódigo para GRASP, basicstyle=\ttfamily\scriptsize]
+vns(col, kmax)
+col2 = col
+k = 1
+while(k <= kmax) {
+    shaking(col2, k)
+    local(col2)
+    if(card(col2) < card(col)) {
+        col = col2
+        k = 1
+    } else {
+        ++k
+    }
+}
+
+shaking(col, k) {
+    col2 = col
+    for(i in 1..k) {
+        if(i <= card(col)) {
+            col[random(cores utilizadas em col)] = 0
+        } else {
+            col[random(cores nao utilizadas em col)] = 1
+        }
+    }
+
+    while(comp(c) > 1) {
+        melhores = argmin comp(c)
+        col2[random(melhores)] = 1
+    }
+}
+\end{lstlisting}
 
 \section{Complexidade}
 
