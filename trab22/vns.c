@@ -4,16 +4,18 @@
 #include <time.h>
 #include "common.c"
 
-void shaking(int size, int graph[size][size], int colors, int col[colors], int col2[colors], int k) {
+void shaking(int size, int graph[size][size], int colors, int col[colors], int k) {
     /* Etapa de shaking do VNS */
 
-    int c;
     int used[colors];
     int used_count = 0;
     int unused_count = 0;
-    for(int i = 0; i < colors; ++i) {
-        col2[i] = col[i];
+    int card_col = card(colors, col);
 
+    // Coloca índices das cores usadas no começo da matriz used e não usadas no
+    // final. Para diferenciar os usados de não usados, no final do laço,
+    // used_count contém o valor do índice da última cor usada
+    for(int i = 0; i < colors; ++i) {
         if(col[i] == 1) {
             used[used_count] = i;
             ++used_count;
@@ -23,30 +25,34 @@ void shaking(int size, int graph[size][size], int colors, int col[colors], int c
         }
     }
 
+    // Remove e adiciona cores
     for(int i = 1; i < k; ++i) {
-        if(i <= card(colors, col)) {
+        if(i <= card_col) {
             // Remove cor utilizada
-            col[rand() % used_count] = 0;
+            col[used[rand() % used_count]] = 0;
         } else {
             // Adiciona cor não utilizada
-            col[used_count + (rand() % unused_count)] = 1;
+            col[used[used_count + (rand() % unused_count)]] = 1;
         }
     }
 
+    int col2[colors];
     int rcl[colors];
     int alpha = 0;
     for(int i = 0; i < colors; ++i) { rcl[i] = 0; }
 
     while(comp(size, graph, colors, col) > 1) {
-        // Adicionar candidatos que minimizam comp(c)
+        // Adiciona candidatos que minimizam comp(c)
         int comp_val;
         int comp_min = size;
         for(int i = 0; i < colors; ++i) {
             for(int j = 0; j < colors; ++j) { col2[j] = col[j]; }
+            // Tenta adicionar a cor para verificar se minimiza comp
             col2[i] = 1;
             comp_val = comp(size, graph, colors, col2);
             if(comp_val < comp_min) {
                 comp_min = comp_val;
+                // Zera a lista de candidatos pois um novo mínimo foi descoberto
                 for(int j = 0; j < colors; ++j) { rcl[j] = 0; }
                 rcl[0] = i;
                 alpha = 1;
@@ -56,8 +62,11 @@ void shaking(int size, int graph[size][size], int colors, int col[colors], int c
             }
         }
 
+        // Adiciona melhores candidatos até obter grafo conexo
         col[rcl[rand() % alpha]] = 1;
     }
+
+    printf("shaking final comp: %i\n", comp(size, graph, colors, col));
 
     //for(int i = 0; i < colors; ++i) { printf("%i | ", col[i]); }
     //printf("\n");
@@ -67,29 +76,30 @@ void vns(int size, int graph[size][size], int colors, int col[colors]) {
     /* VNS */
 
     int k;
-    int col2[colors];
     int no_improv = 0;
+    int col2[colors];
 
-    printf("oxe\n");
-    for(int i = 0; i < colors; ++i) { col[i] = random() % 2; }
-    for(int i = 0; i < colors; ++i) { printf("%i | ", col[i]); }
-    printf("\n");
+    for(int i = 0; i < colors; ++i) {
+        col[i] = rand() % 2;
+        col2[i] = col[i];
+    }
 
-    int card_col = card(colors, col);
-    printf("card_col: %i\n", card_col);
     // De Consoli et al: according to our experiments, (|C| + |C|/3) is the best choice
-    int kmax = card_col * (4 / 3);
-    while(no_improv < 5) {
+    int new_card;
+    int card_col = card(colors, col);
+    int kmax = card_col * (4.0f / 3.0f);
+    while(no_improv < 3) {
         k = 1;
         while(k <= kmax) {
-            //printf("shaking (k: %i / kmax: %i | %i)\n", k, kmax, no_improv);
-            shaking(size, graph, colors, col, col2, k);
-            local(size, graph, colors, col2);
-            if(comp(size, graph, colors, col2) == 1 && card(colors, col2) < card_col) {
+            printf("shaking (k: %i / kmax: %i | %i)\n", k, kmax, no_improv);
+            shaking(size, graph, colors, col2, k);
+            local(size, graph, colors, col);
+            new_card = card(colors, col2);
+            if(new_card < card_col) {
                 for(int i = 0; i < colors; ++i) { col[i] = col2[i]; }
-                card_col = card(colors, col);
+                card_col = card(colors, col2);
+                kmax = card_col * (4.0f / 3.0f);
                 k = 1;
-                kmax = card_col * (4 / 3);
                 no_improv = 0;
                 printf("VNS improvement!\n");
             } else {
@@ -134,11 +144,11 @@ int main(int argc, char **argv) {
     printf("colors: %i\n", colors);
     printf("edges: %i\n", count_edges);
 
-    for(int i = 0; i < colors; ++i) { col[i] = 0; }
-    printf("\n");
-
     // Seed com o tempo
     srand(time(NULL));
+
+    for(int i = 0; i < colors; ++i) { col[i] = 0; }
+    printf("\n");
 
     // Clock inicial para mensurar diversos tempos de execução
     clock_t begin = clock();
@@ -168,14 +178,14 @@ int main(int argc, char **argv) {
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     printf("time: %fms\n", time_spent * 1000);
 
-    printf("Plot? (y/N): ");
-    char ans;
-    scanf("%c", &ans);
+    //printf("Plot? (y/N): ");
+    //char ans;
+    //scanf("%c", &ans);
 
-    if(ans == 'y') {
-        plot_initial(size, graph);
-        plot_solution(size, graph, colors, col, span);
-    }
+    //if(ans == 'y') {
+    //    plot_initial(size, graph);
+    //    plot_solution(size, graph, colors, col, span);
+    //}
 
     return 1;
 }

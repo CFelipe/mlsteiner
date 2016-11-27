@@ -1,3 +1,5 @@
+#include <string.h>
+
 char* get_color(int label) {
     /* Retorna cores para as arestas do grafo, caso queira gerar uma
      * representação com o graphviz */
@@ -201,7 +203,6 @@ void local(int size, int graph[size][size], int colors, int col[colors]) {
      * verificar se após a remoção ainda tem-se um grafo conexo, isto é,
      * comp(c) = 1 */
 
-    printf("%i / ", card(colors, col));
     for(int i = 0; i < colors; ++i) {
         if(col[i] == 1) {
             col[i] = 0;
@@ -214,6 +215,30 @@ void local(int size, int graph[size][size], int colors, int col[colors]) {
             }
         }
     }
+
     //printf("%i\n", card(colors, col));
     //printf("---\n");
+}
+
+void out(char *name, int size, int graph[size][size], int colors, int col[colors]) {
+    char *new_str;
+    char *extension = "-exact.out";
+    if((new_str = malloc(strlen(name)+strlen(extension)+1)) != NULL) {
+        new_str[0] = '\0';
+        strcat(new_str, name);
+        strcat(new_str, extension);
+    } else {
+        exit(1);
+    }
+
+    FILE* fp;
+    if((fp = fopen(new_str, "w")) == 0){
+        printf("Erro ao abrir arquivo");
+        exit(1);
+    }
+
+    fprintf(fp, "%i %i\n", size, colors);
+    for(int i = 0; i < colors; ++i) {
+        fprintf(fp, "%i ", col[i]);
+    }
 }

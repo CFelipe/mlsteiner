@@ -140,14 +140,14 @@ int main(int argc, char **argv) {
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     printf("time: %fms\n", time_spent * 1000);
 
-    printf("Plot? (y/N): ");
-    char ans;
-    scanf("%c", &ans);
+    //printf("Plot? (y/N): ");
+    //char ans;
+    //scanf("%c", &ans);
 
-    if(ans == 'y') {
-        plot_initial(size, graph);
-        plot_solution(size, graph, colors, col_star, span);
-    }
+    //if(ans == 'y') {
+    //    plot_initial(size, graph);
+    //    plot_solution(size, graph, colors, col_star, span);
+    //}
 
     return 1;
 }
