@@ -173,7 +173,7 @@ void dfs(int size, int graph[size][size], int visited[size], int node, int color
 void dfs2(int size, int graph[size][size], int colors, int col_star[colors], int visited[], int span[size], int node) {
     /* Realiza a busca em profundidade para cálculo do grafo final, isto é, a
      * árvore de Steiner com rotulação mínima. O resultado é colocado no vetor
-     * span, que indica a ordem em que são visitadasdiquuwdqwd */
+     * span, que indica a ordem em que são visitados os nós */
 
     if(graph[node][node] == 0 && deg(size, graph, colors, col_star, node) <= 1) {
         span[node] = -1;
@@ -237,8 +237,11 @@ void local(int size, int graph[size][size], int colors, int col[colors]) {
 }
 
 void out(char *name, int size, int graph[size][size], int colors, int col[colors]) {
+    /* Cria um arquivo com saída correspondente à entrada  e salva com o mesmo
+     * nome, adicionando ".out" ao final*/
+
     char *new_str;
-    char *extension = "-exact.out";
+    char *extension = "-.out";
     if((new_str = malloc(strlen(name)+strlen(extension)+1)) != NULL) {
         new_str[0] = '\0';
         strcat(new_str, name);

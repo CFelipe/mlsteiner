@@ -8,7 +8,17 @@
 
 int debug = 0;
 
-void test(int size, int graph[size][size], int colors, int col[colors], int col_star[colors]) {
+void test(int size, int graph[size][size], int colors, int col[colors], int col_star[colors], clock_t init_clock) {
+    double time_spent = (double) (clock() - init_clock) / CLOCKS_PER_SEC;
+
+    if(time_spent > 3.0f) {
+        if(debug) printf("Tempo limite ultrapassado\n");
+        printf("-1 -1\n");
+        exit(0);
+    } else {
+        //if(debug) printf("ts: %f\n", time_spent);
+    }
+
     if(card(colors, col) < card(colors, col_star)) {
         int comp_val = comp(size, graph, colors, col);
         if(comp_val == 1) {
@@ -19,12 +29,13 @@ void test(int size, int graph[size][size], int colors, int col[colors], int col_
             for(int i = 0; i < colors; ++i) {
                 if(col[i] == 0) {
                     col[i] = 1;
-                    test(size, graph, colors, col, col_star);
+                    test(size, graph, colors, col, col_star, init_clock);
                     col[i] = 0;
                 }
             }
         }
     }
+
 }
 
 int main(int argc, char **argv) {
@@ -103,7 +114,7 @@ int main(int argc, char **argv) {
 
     clock_t begin = clock();
 
-    test(size, graph, colors, col, col_star);
+    test(size, graph, colors, col, col_star, begin);
 
     if(debug) {
         printf("---\n");

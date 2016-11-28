@@ -182,7 +182,6 @@ int main(int argc, char **argv) {
     if(debug) printf("rand_test: %i\n", rand());
 
     for(int i = 0; i < colors; ++i) { col[i] = 0; }
-    printf("\n");
 
     // Clock inicial para mensurar diversos tempos de execução
     clock_t begin = clock();

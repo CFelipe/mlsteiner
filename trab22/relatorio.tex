@@ -15,6 +15,8 @@
 \usepackage{verbatim}
 \usepackage{amsmath}
 \usepackage{multirow}
+\usepackage{algorithm}% http://ctan.org/pkg/algorithms
+\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
 \usepackage[autostyle]{csquotes}
 \usepackage[breaklinks]{hyperref}
 
@@ -40,11 +42,12 @@
     tabsize=4,
     captionpos=b,
 }
-
 \DeclareMathOperator{\argmin}{argmin}
 \DeclareMathOperator{\comp}{comp}
 
 \newcommand{\ic}[1]{\textbf{\lstinline{#1}}}
+\makeatletter
+\renewcommand{\ALG@name}{Algoritmo}
 
 \DeclareGraphicsExtensions{.pdf}
 
@@ -74,15 +77,17 @@ Neste relatório são apresentados os algoritmos \emph{Greedy Randomized
 Adaptative Search Procedure} e \emph{Variable Neighbourhood Search} para
 solução do problema da árvore de Steiner com rotulação mínima. Os princípios de
 cada técnica são descritos, assim como a maneira em que foram utilizados para
-resolver especificamente o problema. É realizada uma análise de complexidade em
-tempo para as implementações, identificando os gargalos. Explica-se como foram
-gerados os casos de teste e os seus parâmetros e são apresentados resultados
-comparando o resultado das execuções para cada técnica, incluindo o algoritmo
-exato desenvolvido na segunda unidade. Além disso, é feito um adendo para o
-relatório do primeiro trabalho, apresentando os resultados e conclusão
-previamente faltantes.
+resolver o problema. É realizada uma análise de complexidade em tempo para as
+implementações, identificando os gargalos. Explica-se como foram gerados os
+casos de teste e são apresentados resultados comparando o resultado das
+execuções para cada técnica, incluindo o algoritmo exato desenvolvido na
+segunda unidade. Além disso, é feito um adendo para o relatório do primeiro
+trabalho, apresentando os resultados e conclusão previamente faltantes.
 
 \section{Metaheurísticas utilizadas}
+As definições seguintes foram adaptadas do \emph{Handbook of Metauheuristics}
+\cite{handbook}.
+
 \subsection{GRASP}
 O \emph{Greedy Randomized Adaptative Search Procedure} é comumente utilizado em
 problemas de otimização combinatória. A cada iteração, é realizada uma fase de
@@ -91,10 +96,12 @@ fase de busca local, procurando um mínimo local na vizinhança da solução
 gerada. Se a melhor solução global é encontrada na iteração, atualiza-se a
 variável que contém a melhor solução. É um algoritmo de inicialização múltipla,
 ou seja, as duas fases são repetidas até o critério de parada ser satisfeito,
-podendo ser o número de iterações ou o tempo de execução, por exemplo. Na fase
-de construção, é criada uma lista de candidatos restritos, possuindo os
-candidatos cujos elementos adicionados minimizam os custos incrementais. O
-elemento é selecionado aleatoriamente da RCL.
+podendo esse ser o número de iterações ou o tempo de execução, por exemplo.
+
+Na fase de construção, é criada uma lista de candidatos restritos, possuindo os
+elementos que minimizam os custos incrementais. O elemento é selecionado
+aleatoriamente dessa lista para entrar na nova solução. O processo é repetido
+até ter uma nova solução válida.
 
 \subsection{VNS}
 O \emph{Variable Neighbourhood Search} faz uso de múltiplas estruturas de
@@ -103,20 +110,50 @@ portanto mais custosos. Para fugir de mínimos locais, o algoritmo possui uma fa
 de agitação, em que a solução encontrada pode ser trocada por uma pior a fim de
 diversificar a busca, explotando melhor o espaço.
 
-
 \section{Metaheurística aplicada ao problema}
 \subsection{GRASP}
 No problema, a fase de construção gera uma lista de candidatos restritos
-calculando $ \argmin(\comp(c)) $ para cada cor não utilizada, onde $ \comp(c) $
-é o número de componentes conexos do grafo com a coloração $ c $ que incluem
-pelo menos um nó básico. Após a segunda repetição, o primeiro rótulo a ser
+calculando $ \argmin(\comp(col)) $ para cada cor não utilizada, onde $
+\comp(col) $ é o número de componentes conexos do grafo com a coloração $ col $
+que incluem pelo menos um nó básico. A operação é repetida até $ \comp(col) $
+ter valor 1, o que significa que foi encontrada uma nova solução válida.
+
+Após a segunda repetição da inicialização múltipla, o primeiro rótulo a ser
 adicionado é totalmente aleatório, ou seja, a lista de candidatos é
 inicializada como $ {1, 1, ..., 1 } $, explotando melhor o espaço de busca em
-vez de escolher sempre rótulos que minimizam $ \comp(c) $.
+vez de escolher sempre rótulos que minimizam $ \comp(col) $.
 
 Após a fase de construção, é feita uma busca local, que consiste em tentar
 remover cores da solução e verificar se ainda obtém-se um grafo conexo,
 configurando outra solução válida.
+
+Na implementação, percebeu-se que para grafos com \ic{DENSITY} acima de 50, a
+cardinalidade da coloração atinge o mínimo global identificado pelo algoritmo
+exato nas primeiras iterações. Logo, para deixar o algoritmo mais rápido, o
+critério de parada é a falta de melhoria em três iterações. Para densidades
+menores, a variação entre iterações é maior.
+
+%\begin{algorithm}
+%    \caption{Euclid’s algorithm}
+%    \label{pseudograsp}
+%    \begin{algorithmic}[1]
+%        \State $col^*\gets \{\} $
+%        \While{Nenhuma melhoria em $ x $ iterações}
+%            \State $col\gets \{\} $
+%            \State \Call{Construct}{col}
+%        \EndWhile
+%        \Procedure{Construct}{$a,b$}
+%            \State $r\gets a \bmod b$
+%            \While{$r\not=0$} \Comment{We have the answer if r is 0}
+%                \State $a \gets b$
+%                \State $b \gets r$
+%                \State $r \gets a \bmod b$
+%            \EndWhile\label{euclidendwhile}
+%            \State \textbf{return} $b$\Comment{The gcd is b}
+%        \EndProcedure
+%    \end{algorithmic}
+%\end{algorithm}
+%
 
 \begin{lstlisting}[caption=Pseudocódigo para GRASP, basicstyle=\ttfamily\scriptsize]
 grasp(limite) {
@@ -150,9 +187,17 @@ construct() {
 \end{lstlisting}
 
 \subsection{VNS}
-Quando o algoritmo é executado independentemente, a configuração das cores
-inicial é totalmente aleatória, e a fase de agitação remove e adiciona cores
-dependendo da vizinhança.
+Quando o algoritmo é executado independentemente, a configuração inicial das
+cores é totalmente aleatória, isto é, cada elemento do vetor é inicializado
+como 0 ou 1 seguindo a distribuição uniforme.
+
+Na fase de agitação, cores de $ col $ são removidas e adicionadas dependendo da
+cardinalidade do conjunto. A remoção de cores pode tornar o grafo desconexo,
+então é realizado o mesmo procedimento do GRASP para conectar o grafo
+escolhendo $ c \in \argmin(\comp(col \cup c)) $ repetidamente.
+
+Em seguida, o mesmo procedimento de busca local utilizado pelo GRASP é
+realizado, tentando descartar cores desnecessárias.
 
 \begin{lstlisting}[caption=Pseudocódigo para VNS, basicstyle=\ttfamily\scriptsize]
 vns(col, kmax)
@@ -173,21 +218,22 @@ shaking(col, k) {
     col2 = col
     for(i in 1..k) {
         if(i <= card(col)) {
-            col[random(cores utilizadas em col)] = 0
+            col2[random(cores utilizadas em col)] = 0
         } else {
-            col[random(cores nao utilizadas em col)] = 1
+            col2[random(cores nao utilizadas em col)] = 1
         }
     }
 
-    while(comp(c) > 1) {
+    while(comp(col2) > 1) {
         melhores = argmin comp(c)
         col2[random(melhores)] = 1
     }
 }
 \end{lstlisting}
 
-
 \section{Complexidade}
+\subsection{GRASP}
+\subsection{VNS}
 
 \section{Casos teste utilizados}
 Os casos teste utilizados são gerados automaticamente por um programa
@@ -200,7 +246,7 @@ equivalentes a 0\% e 100\%, respectivamente) adicionando ou não uma aresta de
 rotulação aleatória ligando dois nós. O arquivo gerado é então passado para o
 programa principal.
 
-A fim de comparar os resultados com o trabalho realizado por Cerulli,
+A fim de comparar os resultados com o trabalho realizado por Cerulli
 \cite{cerulli}, os parâmetros dos testes são os mesmos, isto é, tem-se uma
 combinação entre \ic{SIZE} $ \in \{50, 100\} $, \ic{COLORS} $ \in \{0.25n,
 0.5n, n, 1.25n\} $, \ic{DENSITY} $ \in \{0.2, 0.5, 0.8\}$ e \ic{BASIC} $ \in
@@ -211,14 +257,17 @@ O código que gera os arquivos de caso teste para os parâmetros desejados está
 em \ic{generate.py}.
 
 \section{Resultados}
-\begin{table}[h]
-\footnotesize
-\input{table}
-\caption{Opa}
-\normalsize
-\end{table}
-
 \section{Experimentos comparativos}
+\subsection{Comparação com algoritmo exato}
+Como pode ser visto nos plots e na tabela, o algoritmo exato funciona bem para
+instâncias pequenas do problema, porém os algoritmos metaheurísticos conseguem
+lidar com densidades menores e instâncias maiores em menos tempo.
+
+\subsection{Comparação com literatura}
+Ao contrário do que se verifica na literatura, o GRASP funciona melhor para os
+casos teste, apresentando menos variação e a maioria dos resultados 
+Verifica-se que a densidade é o fator mais importante na execução do algoritmo
+exato
 
 \section{Conclusões}
 
@@ -230,13 +279,55 @@ por força-bruta.  Atualizando o limite inferior continuamente, é possível
 eliminar a exploração de regiões não-promissoras do espaço de busca.
 
 \subsection{Resultados}
-Opa.
+O tempo de execução para cada instância do caso teste está na tabela 1.
+Experimentalmente percebeu-se que se o algoritmo demora mais que cinco
+segundos, ele não retornará uma resposta dentro de um minuto. O algoritmo
+funciona mais rapidamente para casos em que a densidade é maior. Para \ic{SIZE}
+$ = 50 $, costuma falhar na maioria dos casos em que \ic{DENSITY} $ \leq 20 $.
+Para tamanhos maiores, falha também quando \ic{DENSITY} $ \leq 50 $.
 
-\subsection{Conclusão}
+\subsection{Conclusões}
+Neste trabalho verificou-se que o algoritmo exato implementado com
+branch-and-bound funciona rapidamente para instâncias pequenas e altas
+densidades, mas falha para o restante dos casos.
+
 \subsection{Considerações adicionais}
 O código referente ao algoritmo exato foi modificado para aceitar entradas de
 um caso de teste, foi comentado mais extensivamente e agora é cronometrado para
 possibilitar a análise de resultados.
+
+\section{Tabelas e figuras}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.00\textwidth]{viz1}
+    \caption{Plot para \ic{SIZE} = 50}
+    \label{fig:graph_1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.00\textwidth]{viz2}
+    \caption{Plot para \ic{SIZE} = 100}
+    \label{fig:graph_2}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\tiny
+\input{times_table}
+\caption{Tempo (ms)}
+\normalsize
+\end{table}
+
+\begin{table}[h]
+\centering
+\tiny
+\input{results_table}
+\caption{Resultado ($ |C| $)}
+\normalsize
+\end{table}
+
 
 \begin{thebibliography}{9}
 
@@ -249,6 +340,14 @@ Annals of Operations Research, 2009.
 \\\texttt{\url{https://www.researchgate.net/publication/225327721_Variable_neighbourhood_search_for_the_minimum_labelling_Steiner_tree_problem}}
 \normalsize
 
+\bibitem{cerulli}
+R. Cerulli, A. Fink, M. Gentili e S. Voß.
+\textit{Extensions of the minimum labelling spanning tree problem}.
+Journal of Telecommunications and Information Technology, 2006.
+\tiny
+\\\texttt{\url{https://www.researchgate.net/publication/228668519_Extensions_of_the_minimum_labelling_spanning_tree_problem}}
+\normalsize
+
 \bibitem{graphviz}
 \textit{Graphviz --- Graph Visualization Software}. \\
 \tiny
@@ -259,14 +358,6 @@ Annals of Operations Research, 2009.
 Glover, F., Kochenberger, G. A. et al.
 \textit{Handbook of Metaheuristics}.
 Kluwer Academic Publishers
-
-\bibitem{cerulli}
-R. Cerulli, A. Fink, M. Gentili e S. Voß.
-\textit{Extensions of the minimum labelling spanning tree problem}.
-Journal of Telecommunications and Information Technology, 2006.
-\tiny
-\\\texttt{\url{https://www.researchgate.net/publication/228668519_Extensions_of_the_minimum_labelling_spanning_tree_problem}}
-\normalsize
 
 \bibitem{executiontime}
 \textit{Stack Overflow --- Execution time of a C program}. \\
