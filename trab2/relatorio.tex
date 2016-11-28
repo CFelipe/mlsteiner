@@ -65,17 +65,18 @@
 \end{center}
 
 \section{Introdução}
-Neste relatório é apresentado um algoritmo metaheurístico para resolver o
-problema da árvore de Steiner com rotulação mínima. O algoritmo é uma
-combinação do \emph{Greedy Randomized Adaptative Search Procedure} apresentado
-por Consoli et al \cite{consoli} com sua fase de busca local substituída por
-uma \emph{Variable Neighbourhood Search}. Os resultados são comparados com o
-algoritmo exato implementado na primeira unidade, é feita uma análise de
-complexidade procurando identificar os bottlenecks, é descrito como são gerados
-os casos de teste, uma tabela mostra os resultados obtidos para uma média de
-dez execuções de caso de teste. Além disso, é feito um adendo para o relatório
-do primeiro trabalho, apresentando os resultados previamente faltantes à
-conclusão.
+Neste relatório são apresentados os algoritmos \emph{Greedy Randomized
+Adaptative Search Procedure} e \emph{Variable Neighbourhood Search} para
+solução do problema da árvore de Steiner com rotulação mínima. Os princípios de
+cada técnica são descritos, assim como a maneira em que foram utilizados para
+resolver especificamente o problema. É realizada uma análise de complexidade em
+tempo para as implementações, identificados os gargalos. Explica-se como foram
+gerados os casos de teste e os seus parâmetros e são apresentados resultados
+comparando o resultado das execuções para cada técnica, incluindo o algoritmo
+exato desenvolvido na segunda unidade. EXPERIMENTOS COMPUTACIONAIS PARA
+DEFINIÇÃO DO ALGORITMO! Além disso, é feito um adendo para o relatório do
+primeiro trabalho, apresentando os resultados e conclusão previamente
+faltantes.
 
 \section{Metaheurísticas utilizadas}
 \subsection{GRASP}
@@ -84,24 +85,13 @@ problemas de otimização combinatória. A cada iteração, é realizada uma fas
 construção, em que se gera uma solução para o problema e posteriormente uma
 fase de busca local, procurando um mínimo local na vizinhança da solução
 gerada. Se a melhor solução global é encontrada na iteração, atualiza-se a
-variável que contém a melhor solução. As duas fases são repetidas até o
-critério de parada ser satisfeito, podendo ser o número de iterações ou o tempo
-de execução, por exemplo. Na fase de construção, é criada uma lista de
-candidatos restritos,
-função gulosa, restricted candidate list possui os candidatos cujos elementos
-adicionados minimizam os custos incrementais. O elemento é selecionado
-aleatoriamente da RCL.
-inicialização múltipla.
+variável que contém a melhor solução. É um algoritmo de inicialização múltipla,
+ou seja, as duas fases são repetidas até o critério de parada ser satisfeito,
+podendo ser o número de iterações ou o tempo de execução, por exemplo. Na fase
+de construção, é criada uma lista de candidatos restritos, possuindo os
+candidatos cujos elementos adicionados minimizam os custos incrementais. O
+elemento é selecionado aleatoriamente da RCL.
 
-\subsection{VNS}
-O \emph{Variable Neighbourhood Search} faz uso de múltiplas estruturas de
-vizinhança, explorando vizinhanças cada vez mais distantes e maiores assim que
-o ótimo local é obtido por uma dessas vizinhanças. As diferentes vizinhanças
-são $ K_n $ e a vizinhança mais distante (normalmente de cardinalidade maior)
-é $ K_{max} $.
-
-\section{Metaheurística aplicada ao problema}
-\subsection{GRASP}
 \begin{lstlisting}[caption=Pseudocódigo para GRASP, basicstyle=\ttfamily\scriptsize]
 grasp(limite) {
     col* = {}
@@ -136,7 +126,13 @@ construct() {
 \end{lstlisting}
 
 \subsection{VNS}
-\begin{lstlisting}[caption=Pseudocódigo para GRASP, basicstyle=\ttfamily\scriptsize]
+O \emph{Variable Neighbourhood Search} faz uso de múltiplas estruturas de
+vizinhança, explorando comumente espaços cada vez mais distantes e maiores,
+portanto mais custosos. Para fugir de mínimos locais, o algoritmo possui uma fase
+de agitação, em que a solução encontrada pode ser trocada por uma pior a fim de
+diversificar a busca, explotando melhor o espaço.
+
+\begin{lstlisting}[caption=Pseudocódigo para VNS, basicstyle=\ttfamily\scriptsize]
 vns(col, kmax)
 col2 = col
 k = 1
@@ -167,6 +163,10 @@ shaking(col, k) {
     }
 }
 \end{lstlisting}
+
+
+\section{Metaheurística aplicada ao problema}
+\subsection{GRASP}
 
 \section{Complexidade}
 

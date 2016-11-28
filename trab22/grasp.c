@@ -1,8 +1,12 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <unistd.h>
 #include "common.c"
+
+int debug = 0;
 
 void construct(int size, int graph[size][size], int colors, int col[colors], int iteration) {
     /* Etapa de construção do GRASP */
@@ -73,11 +77,40 @@ void grasp(int size, int graph[size][size], int colors, int col[colors], int col
 
 int main(int argc, char **argv) {
     // Tamanho e cores do problema a serem lidos do arquivo de entrada
-    int size, colors;
+    int size, colors, c;
+    bool plot = 0;
+    char* input_file = NULL;
+
+    while((c = getopt(argc, argv, "f:dp")) != -1) {
+        switch (c) {
+            case 'f':
+                input_file = optarg;
+                break;
+            case 'd':
+                debug = 1;
+                break;
+            case 'p':
+                plot = 1;
+                break;
+            return 1;
+            case '?':
+                if (optopt == 'f') {
+                    fprintf (stderr, "A opção -%c requer um nome de arquivo.\n", optopt);
+                    exit(1);
+                } else if (isprint(optopt)) {
+                    fprintf (stderr, "Opção `-%c' desconhecida.\n", optopt);
+                } else {
+                    fprintf (stderr, "Erro de argumentos.\n");
+                }
+            default:
+                abort();
+        }
+    }
 
     FILE* fp;
-    if((fp = fopen(argv[1], "r")) == 0){
-        printf("Erro ao abrir arquivo\n");
+    if((fp = fopen(input_file, "r")) == 0){
+        printf("Arquivo não informado ou erro na leitura\n");
+        printf("Formato esperado: -f [nome do arquivo] -dp\n");
         exit(1);
     }
 
@@ -140,14 +173,10 @@ int main(int argc, char **argv) {
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     printf("time: %fms\n", time_spent * 1000);
 
-    //printf("Plot? (y/N): ");
-    //char ans;
-    //scanf("%c", &ans);
-
-    //if(ans == 'y') {
-    //    plot_initial(size, graph);
-    //    plot_solution(size, graph, colors, col_star, span);
-    //}
+    if(plot) {
+        plot_initial(size, graph);
+        plot_solution(size, graph, colors, col, span);
+    }
 
     return 1;
 }

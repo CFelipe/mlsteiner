@@ -1,8 +1,12 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <unistd.h>
 #include "common.c"
+
+int debug = 0;
 
 void shaking(int size, int graph[size][size], int colors, int col[colors], int k) {
     /* Etapa de shaking do VNS */
@@ -86,21 +90,20 @@ void vns(int size, int graph[size][size], int colors, int col[colors]) {
     int new_card;
     int card_col = colors;
     int kmax = card_col * (4.0f / 3.0f);
-    while(no_improv < 3) {
+    while(no_improv < 1) {
         k = 1;
         while(k <= kmax) {
-            printf("shaking (k: %i / kmax: %i | %i)\n", k, kmax, no_improv);
+            if(debug) printf("shaking (k: %i / kmax: %i | %i)\n", k, kmax, no_improv);
             shaking(size, graph, colors, col2, k);
             local(size, graph, colors, col2);
             new_card = card(colors, col2);
-            printf("new_card: %i vs %i\n", new_card, card_col);
             if(new_card < card_col) {
                 for(int i = 0; i < colors; ++i) { col[i] = col2[i]; }
+                if(debug) printf("improvement: %i vs %i\n", new_card, card_col);
                 card_col = card(colors, col2);
                 kmax = card_col * (4.0f / 3.0f);
                 k = 1;
                 no_improv = 0;
-                printf("VNS improvement!\n");
             } else {
                 ++k;
             }
@@ -113,11 +116,40 @@ void vns(int size, int graph[size][size], int colors, int col[colors]) {
 
 int main(int argc, char **argv) {
     // Tamanho e cores do problema a serem lidos do arquivo de entrada
-    int size, colors;
+    int size, colors, c;
+    bool plot = 0;
+    char* input_file = NULL;
+
+    while((c = getopt(argc, argv, "f:dp")) != -1) {
+        switch (c) {
+            case 'f':
+                input_file = optarg;
+                break;
+            case 'd':
+                debug = 1;
+                break;
+            case 'p':
+                plot = 1;
+                break;
+            return 1;
+            case '?':
+                if (optopt == 'f') {
+                    fprintf (stderr, "A opção -%c requer um nome de arquivo.\n", optopt);
+                    exit(1);
+                } else if (isprint(optopt)) {
+                    fprintf (stderr, "Opção `-%c' desconhecida.\n", optopt);
+                } else {
+                    fprintf (stderr, "Erro de argumentos.\n");
+                }
+            default:
+                abort();
+        }
+    }
 
     FILE* fp;
-    if((fp = fopen(argv[1], "r")) == 0){
-        printf("Erro ao abrir arquivo\n");
+    if((fp = fopen(input_file, "r")) == 0){
+        printf("Arquivo não informado ou erro na leitura\n");
+        printf("Formato esperado: -f [nome do arquivo] -dp\n");
         exit(1);
     }
 
@@ -177,14 +209,10 @@ int main(int argc, char **argv) {
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     printf("time: %fms\n", time_spent * 1000);
 
-    //printf("Plot? (y/N): ");
-    //char ans;
-    //scanf("%c", &ans);
-
-    //if(ans == 'y') {
-    //    plot_initial(size, graph);
-    //    plot_solution(size, graph, colors, col, span);
-    //}
+    if(plot) {
+        plot_initial(size, graph);
+        plot_solution(size, graph, colors, col, span);
+    }
 
     return 1;
 }

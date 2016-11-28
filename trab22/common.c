@@ -217,9 +217,6 @@ void local(int size, int graph[size][size], int colors, int col[colors]) {
             }
         }
     }
-
-    printf("LS dropped %i colors\n", count);
-    printf("---\n");
 }
 
 void out(char *name, int size, int graph[size][size], int colors, int col[colors]) {

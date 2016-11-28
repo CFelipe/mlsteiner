@@ -1,17 +1,14 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <unistd.h>
 #include "common.c"
 
-void test(int size, int graph[size][size], int colors, int col[colors], int col_star[colors]) {
-    /*
-    for(int i = 0; i < colors; ++i) {
-        printf("%i | ", col[i]);
-    }
-    printf("\n");
-    */
+int debug = 0;
 
+void test(int size, int graph[size][size], int colors, int col[colors], int col_star[colors]) {
     if(card(colors, col) < card(colors, col_star)) {
         int comp_val = comp(size, graph, colors, col);
         if(comp_val == 1) {
@@ -31,14 +28,44 @@ void test(int size, int graph[size][size], int colors, int col[colors], int col_
 }
 
 int main(int argc, char **argv) {
-    int size, colors;
+    int size, colors, c;
+    bool plot = 0;
+    char* input_file = NULL;
+
+    while((c = getopt(argc, argv, "f:dp")) != -1) {
+        switch (c) {
+            case 'f':
+                input_file = optarg;
+                break;
+            case 'd':
+                debug = 1;
+                break;
+            case 'p':
+                plot = 1;
+                break;
+            return 1;
+            case '?':
+                if (optopt == 'f') {
+                    fprintf (stderr, "A opção -%c requer um nome de arquivo.\n", optopt);
+                    exit(1);
+                } else if (isprint(optopt)) {
+                    fprintf (stderr, "Opção `-%c' desconhecida.\n", optopt);
+                } else {
+                    fprintf (stderr, "Erro de argumentos.\n");
+                }
+            default:
+                abort();
+        }
+    }
 
     FILE* fp;
-    if((fp = fopen(argv[1], "r")) == 0){
-        printf("Erro ao abrir arquivo\n");
+    if((fp = fopen(input_file, "r")) == 0){
+        printf("Arquivo não informado ou erro na leitura\n");
+        printf("Formato esperado: -f [nome do arquivo] -dp\n");
         exit(1);
     }
 
+    // Lê do arquivo o tamanho do grafo e a quantidade de cores
     fscanf(fp, "%i %i", &size, &colors);
 
     int graph[size][size];
@@ -89,15 +116,11 @@ int main(int argc, char **argv) {
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     printf("time: %fms\n", time_spent * 1000);
 
-    out(argv[1], size, graph, colors, col_star);
+    out(input_file, size, graph, colors, col_star);
 
-    printf("Plot? (y/N): ");
-    char ans;
-    scanf("%c", &ans);
-
-    if(ans == 'y') {
+    if(plot) {
         plot_initial(size, graph);
-        plot_solution(size, graph, colors, col_star, span);
+        plot_solution(size, graph, colors, col, span);
     }
 
     return 1;
