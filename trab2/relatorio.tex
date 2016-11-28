@@ -100,7 +100,7 @@ grasp(limite) {
     while(no_improv < limite) {
         col = {}
         construct(col)
-        local(col) ou vns(col)
+        local(col)
         if(card(col) < card(col*)) {
             col* = col
             no_improv = 0
@@ -167,6 +167,12 @@ shaking(col, k) {
 
 \section{Metaheurística aplicada ao problema}
 \subsection{GRASP}
+No problema, a fase de construção gera uma lista de candidatos restritos
+calculando $ argmin(comp(x)) $ para cada cor.
+
+\subsection{VNS}
+Quando o algoritmo é executado independentemente, a configuração das cores
+inicial é totalmente aleatória, e a fase de agitação
 
 \section{Complexidade}
 
@@ -181,12 +187,12 @@ equivalentes a 0\% e 100\%, respectivamente) adicionando ou não uma aresta de
 rotulação aleatória ligando dois nós. O arquivo gerado é então passado para o
 programa principal.
 
-A fim de comparar os resultados com o trabalho realizado por Consoli
-\cite{consoli}, os parâmetros dos testes são os mesmos, isto é, tem-se uma
-combinação entre \ic{DENSITY} $ \in \{80, 50, 20\} $, e para \ic{SIZE} $ = 100 $,
-\ic{COLORS} $ \in \{25, 50, 100, 125\} $, para \ic{SIZE} $ = 500 $, \ic{COLORS}
-$ \in \{125, 250, 500, 625\} $. \ic{BASIC} recebe $ 20\% $ de \ic{SIZE}, isto é,
-20 e 100, respectivamente.
+A fim de comparar os resultados com o trabalho realizado por Cerulli,
+\cite{cerulli}, os parâmetros dos testes são os mesmos, isto é, tem-se uma
+combinação entre \ic{SIZE} $ \in \{50, 100\} $, \ic{COLORS} $ \in \{0.25n,
+0.5n, n, 1.25n\} $, \ic{DENSITY} $ \in \{0.2, 0.5, 0.8\}$ e \ic{BASIC} $ \in
+\{0.2n, 0.4n\} $. Cada caso teste é executado dez vezes diferentes e são
+apresentadas a média, melhor e pior casos e mediana.
 
 O código que gera os arquivos de caso teste para os parâmetros desejados está
 em \ic{generate.py}.
@@ -211,18 +217,28 @@ Annals of Operations Research, 2009.
 
 \bibitem{graphviz}
 \textit{Graphviz --- Graph Visualization Software}. \\
-\url{http://www.graphviz.org/}
+\tiny
+\texttt{\url{http://www.graphviz.org/}}
+\normalsize
 
 \bibitem{handbook}
 Glover, F., Kochenberger, G. A. et al.
 \textit{Handbook of Metaheuristics}.
 Kluwer Academic Publishers
+
+\bibitem{cerulli}
+R. Cerulli, A. Fink, M. Gentili e S. Voß.
+\textit{Extensions of the minimum labelling spanning tree problem}.
+Journal of Telecommunications and Information Technology, 2006.
 \tiny
+\\\texttt{\url{https://www.researchgate.net/publication/228668519_Extensions_of_the_minimum_labelling_spanning_tree_problem}}
 \normalsize
 
 \bibitem{executiontime}
 \textit{Stack Overflow --- Execution time of a C program}. \\
-\url{http://stackoverflow.com/questions/5248915/execution-time-of-c-program}
+\tiny
+\texttt{\url{http://stackoverflow.com/questions/5248915/execution-time-of-c-program}}
+\normalsize
 
 \end{thebibliography}
 

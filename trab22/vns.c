@@ -171,12 +171,15 @@ int main(int argc, char **argv) {
         }
     }
 
-    printf("size: %i\n", size);
-    printf("colors: %i\n", colors);
-    printf("edges: %i\n", count_edges);
+    if(debug) {
+        printf("size: %i\n", size);
+        printf("colors: %i\n", colors);
+        printf("edges: %i\n", count_edges);
+    }
 
     // Seed com o tempo
-    srand(time(NULL));
+    srand(mix(clock(), time(NULL), getpid()));
+    if(debug) printf("rand_test: %i\n", rand());
 
     for(int i = 0; i < colors; ++i) { col[i] = 0; }
     printf("\n");
@@ -186,12 +189,17 @@ int main(int argc, char **argv) {
 
     vns(size, graph, colors, col);
 
-    printf("---\n");
-    printf("Solução (%i):\n", card(colors, col));
-    for(int i = 0; i < colors; ++i) {
-        printf("%i | ", col[i]);
+    if(debug) {
+        printf("---\n");
+        printf("Solução (%i):\n", card(colors, col));
+
+        for(int i = 0; i < colors; ++i) {
+            printf("%i | ", col[i]);
+        }
+        printf("\n");
+    } else {
+        printf("%i ", card(colors, col));
     }
-    printf("\n");
 
     int span[size];
     int visited[size];
@@ -207,12 +215,16 @@ int main(int argc, char **argv) {
     // Clock final para tempo total do algoritmo
     clock_t end = clock();
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-    printf("time: %fms\n", time_spent * 1000);
+    if(debug) {
+        printf("time: %fms\n", time_spent * 1000);
+    } else {
+        printf("%f\n", time_spent * 1000);
+    }
 
     if(plot) {
         plot_initial(size, graph);
         plot_solution(size, graph, colors, col, span);
     }
 
-    return 1;
+    return 0;
 }

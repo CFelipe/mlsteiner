@@ -1,9 +1,12 @@
 from subprocess import run
 
-for d in [80, 50, 20]:
-	for n in [100]:
-	    for l in [25, 50, 100, 125]:
-		    run("./generate testes/n{}-l{}-b{}-d{}.in {} {} {} {}".format(n, l, n//5, d, n, l, n//5, d), shell=True)
-	for n in [500]:
-	    for l in [125, 250, 500, 625]:
-		    run("./generate testes/n{}-l{}-b{}-d{}.in {} {} {} {}".format(n, l, n//5, d, n, l, n//5, d), shell=True)
+for size in [50, 100]:
+    for colors in [0.25, 0.5, 1, 1.25]:
+        for density in [20, 50, 80]:
+            for basic in [0.2, 0.4]:
+                print("s{} | c{} | d{} | b{}".format(size, int(colors * size), density, int(basic * size)))
+                run("./generate testes/n{n}-l{l}-b{b}-d{d}.in {n} {l} {b} {d}".format(n=size,
+                                                                                      l=int(size * colors),
+                                                                                      b=int(size * basic),
+                                                                                      d=density),
+                                                                                      shell=True)

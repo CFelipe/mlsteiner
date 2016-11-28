@@ -1,5 +1,20 @@
 #include <string.h>
 
+// http://stackoverflow.com/a/323302
+// http://www.concentric.net/~Ttwang/tech/inthash.htm
+unsigned long mix(unsigned long a, unsigned long b, unsigned long c) {
+    a=a-b;  a=a-c;  a=a^(c >> 13);
+    b=b-c;  b=b-a;  b=b^(a << 8);
+    c=c-a;  c=c-b;  c=c^(b >> 13);
+    a=a-b;  a=a-c;  a=a^(c >> 12);
+    b=b-c;  b=b-a;  b=b^(a << 16);
+    c=c-a;  c=c-b;  c=c^(b >> 5);
+    a=a-b;  a=a-c;  a=a^(c >> 3);
+    b=b-c;  b=b-a;  b=b^(a << 10);
+    c=c-a;  c=c-b;  c=c^(b >> 15);
+    return c;
+}
+
 char* get_color(int label) {
     /* Retorna cores para as arestas do grafo, caso queira gerar uma
      * representação com o graphviz */
@@ -58,6 +73,7 @@ void plot_initial(int size, int graph[size][size]) {
 
     fclose(fp);
     system("sfdp steiner1.dot -Tpdf -o graph1.pdf");
+    system("rm steiner1.dot");
 }
 
 void plot_solution(int size, int graph[size][size], int colors, int col_star[colors], int span[size]) {
@@ -103,6 +119,7 @@ void plot_solution(int size, int graph[size][size], int colors, int col_star[col
     fprintf(fp, "}");
     fclose(fp);
     system("sfdp steiner2.dot -Tpdf -o graph2.pdf");
+    system("rm steiner2.dot");
 }
 
 int card(int size, int arr[size]) {
