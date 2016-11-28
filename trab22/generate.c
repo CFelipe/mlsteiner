@@ -4,7 +4,6 @@
 #include <time.h>
 #include <unistd.h>
 
-
 int main(int argc, char **argv) {
     if(argc < 6) {
         printf("Passar argumentos no formato "
@@ -18,7 +17,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    srand(time(NULL));
+    srand(mix(clock(), time(NULL), getpid()));
 
     int size = atoi(argv[2]);
     int colors = atoi(argv[3]);

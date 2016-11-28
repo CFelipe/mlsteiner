@@ -99,6 +99,7 @@ int main(int argc, char **argv) {
 
     // Seed com o tempo
     srand(mix(clock(), time(NULL), getpid()));
+    if(debug) printf("rand_test: %i\n", rand());
 
     clock_t begin = clock();
 

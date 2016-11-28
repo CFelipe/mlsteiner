@@ -11,8 +11,6 @@ int debug = 0;
 void construct(int size, int graph[size][size], int colors, int col[colors], int iteration) {
     /* Etapa de construção do GRASP */
 
-    //printf("it: %i\n", iteration);
-
     int col2[colors];
     int rcl[colors];
     int alpha = 0;
@@ -52,9 +50,9 @@ void grasp(int size, int graph[size][size], int colors, int col[colors], int col
     int iteration = 1;
     int no_improv = 0;
 
-    while(no_improv < 1) {
+    while(no_improv < 3) {
         //printf("---\n");
-        //printf("no_improv: %i (%i)\n", no_improv, card(colors, col_star));
+        if(debug) printf("no_improv: %i (%i)\n", no_improv, card(colors, col_star));
         for(int i = 0; i < colors; ++i) { col[i] = 0; }
         construct(size, graph, colors, col, iteration);
         //vns(size, graph, colors, col);
