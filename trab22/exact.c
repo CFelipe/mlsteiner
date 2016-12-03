@@ -7,8 +7,11 @@
 #include "common.c"
 
 int debug = 0;
+clock_t init_clock = 0;
+clock_t shaking_time = 0;
+clock_t local_time = 0;
 
-void test(int size, int graph[size][size], int colors, int col[colors], int col_star[colors], clock_t init_clock) {
+void test(int size, int graph[size][size], int colors, int col[colors], int col_star[colors]) {
     double time_spent = (double) (clock() - init_clock) / CLOCKS_PER_SEC;
 
     if(time_spent > 3.0f) {
@@ -29,7 +32,7 @@ void test(int size, int graph[size][size], int colors, int col[colors], int col_
             for(int i = 0; i < colors; ++i) {
                 if(col[i] == 0) {
                     col[i] = 1;
-                    test(size, graph, colors, col, col_star, init_clock);
+                    test(size, graph, colors, col, col_star);
                     col[i] = 0;
                 }
             }
@@ -112,9 +115,9 @@ int main(int argc, char **argv) {
     srand(mix(clock(), time(NULL), getpid()));
     if(debug) printf("rand_test: %i\n", rand());
 
-    clock_t begin = clock();
+    init_clock = clock();
 
-    test(size, graph, colors, col, col_star, begin);
+    test(size, graph, colors, col, col_star);
 
     if(debug) {
         printf("---\n");

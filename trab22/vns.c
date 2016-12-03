@@ -6,7 +6,12 @@
 #include <unistd.h>
 #include "common.c"
 
-int debug = 0;
+bool debug = 0;
+bool track = 0;
+clock_t init_clock = 0;
+clock_t count_zero = 0;
+double shaking_time = 0;
+double local_time = 0;
 
 void shaking(int size, int graph[size][size], int colors, int col[colors], int k) {
     /* Etapa de shaking do VNS */
@@ -15,11 +20,12 @@ void shaking(int size, int graph[size][size], int colors, int col[colors], int k
     int used_count = 0;
     int unused_count = 0;
     int card_col = card(colors, col);
+    int i, j;
 
     // Coloca índices das cores usadas no começo da matriz used e não usadas no
     // final. Para diferenciar os usados de não usados, no final do laço,
     // used_count contém o valor do índice da última cor usada
-    for(int i = 0; i < colors; ++i) {
+    for(i = 0; i < colors; ++i) {
         if(col[i] == 1) {
             used[used_count] = i;
             ++used_count;
@@ -30,7 +36,7 @@ void shaking(int size, int graph[size][size], int colors, int col[colors], int k
     }
 
     // Remove e adiciona cores
-    for(int i = 1; i < k; ++i) {
+    for(i = 1; i < k; ++i) {
         if(i <= card_col) {
             // Remove cor utilizada
             col[used[rand() % used_count]] = 0;
@@ -43,21 +49,21 @@ void shaking(int size, int graph[size][size], int colors, int col[colors], int k
     int col2[colors];
     int rcl[colors];
     int alpha = 0;
-    for(int i = 0; i < colors; ++i) { rcl[i] = 0; }
+    for(i = 0; i < colors; ++i) { rcl[i] = 0; }
 
     while(comp(size, graph, colors, col) > 1) {
         // Adiciona candidatos que minimizam comp(c)
         int comp_val;
         int comp_min = size;
-        for(int i = 0; i < colors; ++i) {
-            for(int j = 0; j < colors; ++j) { col2[j] = col[j]; }
+        for(i = 0; i < colors; ++i) {
+            for(j = 0; j < colors; ++j) { col2[j] = col[j]; }
             // Tenta adicionar a cor para verificar se minimiza comp
             col2[i] = 1;
             comp_val = comp(size, graph, colors, col2);
             if(comp_val < comp_min) {
                 comp_min = comp_val;
                 // Zera a lista de candidatos pois um novo mínimo foi descoberto
-                for(int j = 0; j < colors; ++j) { rcl[j] = 0; }
+                for(j = 0; j < colors; ++j) { rcl[j] = 0; }
                 rcl[0] = i;
                 alpha = 1;
             } else if(comp_val == comp_min) {
@@ -80,8 +86,9 @@ void vns(int size, int graph[size][size], int colors, int col[colors]) {
     int k;
     int no_improv = 0;
     int col2[colors];
+    int i;
 
-    for(int i = 0; i < colors; ++i) {
+    for(i = 0; i < colors; ++i) {
         col[i] = rand() % 2;
         col2[i] = col[i];
     }
@@ -94,11 +101,15 @@ void vns(int size, int graph[size][size], int colors, int col[colors]) {
         k = 1;
         while(k <= kmax) {
             if(debug) printf("shaking (k: %i / kmax: %i | %i)\n", k, kmax, no_improv);
+            count_zero = clock();
             shaking(size, graph, colors, col2, k);
+            shaking_time += (double) (clock() - count_zero) / CLOCKS_PER_SEC;
+            count_zero = clock();
             local(size, graph, colors, col2);
+            local_time += (double) (clock() - count_zero) / CLOCKS_PER_SEC;
             new_card = card(colors, col2);
             if(new_card < card_col) {
-                for(int i = 0; i < colors; ++i) { col[i] = col2[i]; }
+                for(i = 0; i < colors; ++i) { col[i] = col2[i]; }
                 if(debug) printf("improvement: %i vs %i\n", new_card, card_col);
                 card_col = card(colors, col2);
                 kmax = card_col * (4.0f / 3.0f);
@@ -119,8 +130,9 @@ int main(int argc, char **argv) {
     int size, colors, c;
     bool plot = 0;
     char* input_file = NULL;
+    int i, j;
 
-    while((c = getopt(argc, argv, "f:dp")) != -1) {
+    while((c = getopt(argc, argv, "f:dpt")) != -1) {
         switch (c) {
             case 'f':
                 input_file = optarg;
@@ -131,7 +143,9 @@ int main(int argc, char **argv) {
             case 'p':
                 plot = 1;
                 break;
-            return 1;
+            case 't':
+                track = 1;
+                break;
             case '?':
                 if (optopt == 'f') {
                     fprintf (stderr, "A opção -%c requer um nome de arquivo.\n", optopt);
@@ -149,7 +163,7 @@ int main(int argc, char **argv) {
     FILE* fp;
     if((fp = fopen(input_file, "r")) == 0){
         printf("Arquivo não informado ou erro na leitura\n");
-        printf("Formato esperado: -f [nome do arquivo] -dp\n");
+        printf("Formato esperado: -f [nome do arquivo] -dpt\n");
         exit(1);
     }
 
@@ -162,8 +176,8 @@ int main(int argc, char **argv) {
 
     int count_edges = 0;
     // Lê grafo do arquivo
-    for(int i = 0; i < size; ++i) {
-        for(int j = 0; j < size; ++j) {
+    for(i = 0; i < size; ++i) {
+        for(j = 0; j < size; ++j) {
             fscanf(fp, "%i", &graph[i][j]);
             if((j > i && graph[i][j] != -1)) {
                 ++count_edges;
@@ -181,12 +195,17 @@ int main(int argc, char **argv) {
     srand(mix(clock(), time(NULL), getpid()));
     if(debug) printf("rand_test: %i\n", rand());
 
-    for(int i = 0; i < colors; ++i) { col[i] = 0; }
+    for(i = 0; i < colors; ++i) { col[i] = 0; }
 
     // Clock inicial para mensurar diversos tempos de execução
     clock_t begin = clock();
 
     vns(size, graph, colors, col);
+
+    // Clock final para tempo total do algoritmo
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+
 
     if(debug) {
         printf("---\n");
@@ -202,7 +221,7 @@ int main(int argc, char **argv) {
 
     int span[size];
     int visited[size];
-    for(int i = 0; i < size; ++i) {
+    for(i = 0; i < size; ++i) {
         span[i] = -1;
         visited[i] = 0;
     }
@@ -211,9 +230,11 @@ int main(int argc, char **argv) {
     span[0] = 0;
     dfs2(size, graph, colors, col, visited, span, 0);
 
-    // Clock final para tempo total do algoritmo
-    clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    if(track) {
+        printf("total shaking time: %fms\n", shaking_time * 1000);
+        printf("total local search time: %fms\n", local_time * 1000);
+    }
+
     if(debug) {
         printf("time: %fms\n", time_spent * 1000);
     } else {

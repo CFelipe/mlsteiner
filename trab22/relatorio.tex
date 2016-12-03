@@ -15,8 +15,9 @@
 \usepackage{verbatim}
 \usepackage{amsmath}
 \usepackage{multirow}
-\usepackage{algorithm}% http://ctan.org/pkg/algorithms
-\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
+\usepackage[portuguese, ruled, linesnumbered]{algorithm2e}
+%\usepackage{algpseudocode}
+%\usepackage{algorithm}
 \usepackage[autostyle]{csquotes}
 \usepackage[breaklinks]{hyperref}
 
@@ -44,10 +45,8 @@
 }
 \DeclareMathOperator{\argmin}{argmin}
 \DeclareMathOperator{\comp}{comp}
-
+\SetKwProg{Fn}{Função}{\string:}{}
 \newcommand{\ic}[1]{\textbf{\lstinline{#1}}}
-\makeatletter
-\renewcommand{\ALG@name}{Algoritmo}
 
 \DeclareGraphicsExtensions{.pdf}
 
@@ -101,7 +100,7 @@ podendo esse ser o número de iterações ou o tempo de execução, por exemplo.
 Na fase de construção, é criada uma lista de candidatos restritos, possuindo os
 elementos que minimizam os custos incrementais. O elemento é selecionado
 aleatoriamente dessa lista para entrar na nova solução. O processo é repetido
-até ter uma nova solução válida.
+até obter uma nova solução válida.
 
 \subsection{VNS}
 O \emph{Variable Neighbourhood Search} faz uso de múltiplas estruturas de
@@ -116,7 +115,7 @@ No problema, a fase de construção gera uma lista de candidatos restritos
 calculando $ \argmin(\comp(col)) $ para cada cor não utilizada, onde $
 \comp(col) $ é o número de componentes conexos do grafo com a coloração $ col $
 que incluem pelo menos um nó básico. A operação é repetida até $ \comp(col) $
-ter valor 1, o que significa que foi encontrada uma nova solução válida.
+possuir valor 1, o que significa que foi encontrada uma nova solução válida.
 
 Após a segunda repetição da inicialização múltipla, o primeiro rótulo a ser
 adicionado é totalmente aleatório, ou seja, a lista de candidatos é
@@ -127,64 +126,54 @@ Após a fase de construção, é feita uma busca local, que consiste em tentar
 remover cores da solução e verificar se ainda obtém-se um grafo conexo,
 configurando outra solução válida.
 
-Na implementação, percebeu-se que para grafos com \ic{DENSITY} acima de 50, a
-cardinalidade da coloração atinge o mínimo global identificado pelo algoritmo
-exato nas primeiras iterações. Logo, para deixar o algoritmo mais rápido, o
-critério de parada é a falta de melhoria em três iterações. Para densidades
-menores, a variação entre iterações é maior.
+%Na implementação, percebeu-se que para grafos com \ic{DENSITY} acima de 50, a
+%cardinalidade da coloração atinge o mínimo global identificado pelo algoritmo
+%exato nas primeiras iterações. Logo, para deixar o algoritmo mais rápido, o
+%critério de parada é a falta de melhoria em três iterações. Para densidades
+%menores, a variação entre iterações é maior.
 
-%\begin{algorithm}
-%    \caption{Euclid’s algorithm}
-%    \label{pseudograsp}
-%    \begin{algorithmic}[1]
-%        \State $col^*\gets \{\} $
-%        \While{Nenhuma melhoria em $ x $ iterações}
-%            \State $col\gets \{\} $
-%            \State \Call{Construct}{col}
-%        \EndWhile
-%        \Procedure{Construct}{$a,b$}
-%            \State $r\gets a \bmod b$
-%            \While{$r\not=0$} \Comment{We have the answer if r is 0}
-%                \State $a \gets b$
-%                \State $b \gets r$
-%                \State $r \gets a \bmod b$
-%            \EndWhile\label{euclidendwhile}
-%            \State \textbf{return} $b$\Comment{The gcd is b}
-%        \EndProcedure
-%    \end{algorithmic}
-%\end{algorithm}
-%
-
-\begin{lstlisting}[caption=Pseudocódigo para GRASP, basicstyle=\ttfamily\scriptsize]
-grasp(limite) {
-    col* = {}
-    int no_improv = 0
-
-    while(no_improv < limite) {
-        col = {}
-        construct(col)
-        local(col)
-        if(card(col) < card(col*)) {
-            col* = col
-            no_improv = 0
-        } else {
-            ++no_improv
+\begin{algorithm}[H]
+    \label{alg1}
+    \SetAlgoLined
+    \DontPrintSemicolon
+    %\Entrada{G = (V, E, L)}
+    %\Saida{Coloração $ Col $}
+    \Fn{\textsc{GRASP}(limite)}{
+        $ col^{*} \leftarrow \{\} $ \\
+        \Enqto{iterações $ < $ limite}{
+            col $ \leftarrow $ \textsc{Construct()} \\
+            col $ \leftarrow $ \textsc{Local(col)} \\
+            \Se{$ |col| < |col^{*}| $}{
+                $ col^* \leftarrow  col $
+            }
         }
+        \Retorna{col}
     }
-}
+    \;
+    \Fn{\textsc{Construct}(col)}{
+        $ rcl \leftarrow \{\} $ \\
+        \Se{iterações $ > $ 2}{
+            $ rcl \leftarrow \{1, 1, ..., 1\} $ \\
+            col $ \leftarrow $ col $ \cup $ \textsc{Random}(rcl)
+        }
 
-construct() {
-    if(iteration > 2) {
-        rcl = {1, 1, ... , 1}
-        col[random()] = 1
+        \Enqto{\textsc{Comp}(col) $ > $ 1}{
+            $ rcl \leftarrow \argmin \textsc{Comp}(col) $ \\
+            col $ \leftarrow $ col $ \cup $ \textsc{Random}(rcl)
+        }
+        \Retorna{col}
     }
-
-    while(comp(c) > 1) {
-        rcl = argmin comp(c)
-        col = col (*@$\cup$@*) rcl[random()]
+    \;
+    \Fn{\textsc{Local}(col)}{
+        \Para{cor $ \in $ col}{
+            \Se{\textsc{Comp}(col - cor) ==  1}{
+                col $ \leftarrow $ col - \{cor\}
+            }
+        }
+        \Retorna{col}
     }
-}
-\end{lstlisting}
+    \caption{\textsc{GRASP}}
+\end{algorithm}
 
 \subsection{VNS}
 Quando o algoritmo é executado independentemente, a configuração inicial das
@@ -198,6 +187,43 @@ escolhendo $ c \in \argmin(\comp(col \cup c)) $ repetidamente.
 
 Em seguida, o mesmo procedimento de busca local utilizado pelo GRASP é
 realizado, tentando descartar cores desnecessárias.
+
+\begin{algorithm}[H]
+    \caption{\textsc{VNS}}
+    \label{alg2}
+    \SetAlgoLined
+    \DontPrintSemicolon
+    \Fn{\textsc{VNS}(limite)}{
+        $ col \leftarrow \textsc{GerarVetorAleatório()} $ \\
+        \Enqto{iterações $ < $ limite}{
+            col $ \leftarrow $ \textsc{Shaking()} \\
+            col $ \leftarrow $ \textsc{Local(col)} \\
+            k $ \leftarrow $ 1 \\
+            \Enqto{$ k < k_{max}$ }{
+                \eSe{$ |col^{*}| < |col| $}{
+                    $ col^* \leftarrow  col $
+                }{
+                    ++k
+                }
+            }
+        }
+        \Retorna{col}
+    }
+    \;
+    \Fn{\textsc{Shaking}(col)}{
+        $ rcl \leftarrow \{\} $ \\
+        \Se{iterações $ > $ 2}{
+            $ rcl \leftarrow \{1, 1, ..., 1\} $ \\
+            col $ \leftarrow $ col $ \cup $ \textsc{Random}(rcl)
+        }
+
+        \Enqto{\textsc{Comp}(col) $ > $ 1}{
+            $ rcl \leftarrow \argmin \textsc{Comp}(col) $ \\
+            col $ \leftarrow $ col $ \cup $ \textsc{Random}(rcl)
+        }
+        \Retorna{col}
+    }
+\end{algorithm}
 
 \begin{lstlisting}[caption=Pseudocódigo para VNS, basicstyle=\ttfamily\scriptsize]
 vns(col, kmax)
@@ -256,20 +282,24 @@ apresentadas a média, melhor e pior casos e mediana.
 O código que gera os arquivos de caso teste para os parâmetros desejados está
 em \ic{generate.py}.
 
-\section{Resultados}
-\section{Experimentos comparativos}
+\section{Resultados e experimentos comparativos}
 \subsection{Comparação com algoritmo exato}
 Como pode ser visto nos plots e na tabela, o algoritmo exato funciona bem para
 instâncias pequenas do problema, porém os algoritmos metaheurísticos conseguem
-lidar com densidades menores e instâncias maiores em menos tempo.
+lidar com densidades menores e instâncias maiores em menos tempo. Ambas as
+metaheurísticas apresentam resultados de mesma qualidade, isto é, mesma
+cardinalidade de $ col $ para a maioria das instâncias.
 
 \subsection{Comparação com literatura}
-Ao contrário do que se verifica na literatura, o GRASP funciona melhor para os
-casos teste, apresentando menos variação e a maioria dos resultados 
-Verifica-se que a densidade é o fator mais importante na execução do algoritmo
-exato
+Ao contrário do que se verifica na literatura, a implementação do GRASP
+funciona melhor para a maioria dos casos teste, apresentando menos variação
+melhor eficiência em tempo.
 
 \section{Conclusões}
+Neste trabalho foram feitas as implementações de duas metaheurísticas.
+Observou-se que o GRASP obtém soluções melhores e mais consistentes que o VNS,
+resultado contrário à literatura. Ambas as metaheurísticas funcionam melhor
+para instâncias grandes do problema.
 
 \section{Correções do primeiro trabalho}
 \subsection{Técnica utilizada}
@@ -300,33 +330,33 @@ possibilitar a análise de resultados.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1.00\textwidth]{viz1}
-    \caption{Plot para \ic{SIZE} = 50}
+    \includegraphics[width=1.00\textwidth]{cardcplot}
+    \caption{Plot da qualidade da solução}
     \label{fig:graph_1}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1.00\textwidth]{viz2}
-    \caption{Plot para \ic{SIZE} = 100}
+    \includegraphics[width=1.00\textwidth]{timeplot}
+    \caption{Plot do tempo}
     \label{fig:graph_2}
 \end{figure}
 
-\begin{table}[h]
-\centering
-\tiny
-\input{times_table}
-\caption{Tempo (ms)}
-\normalsize
-\end{table}
-
-\begin{table}[h]
-\centering
-\tiny
-\input{results_table}
-\caption{Resultado ($ |C| $)}
-\normalsize
-\end{table}
+%\begin{table}[h]
+%\centering
+%\tiny
+%\input{times_table}
+%\caption{Tempo (ms)}
+%\normalsize
+%\end{table}
+%
+%\begin{table}[h]
+%\centering
+%\tiny
+%\input{results_table}
+%\caption{Resultado ($ |C| $)}
+%\normalsize
+%\end{table}
 
 
 \begin{thebibliography}{9}
@@ -348,22 +378,10 @@ Journal of Telecommunications and Information Technology, 2006.
 \\\texttt{\url{https://www.researchgate.net/publication/228668519_Extensions_of_the_minimum_labelling_spanning_tree_problem}}
 \normalsize
 
-\bibitem{graphviz}
-\textit{Graphviz --- Graph Visualization Software}. \\
-\tiny
-\texttt{\url{http://www.graphviz.org/}}
-\normalsize
-
 \bibitem{handbook}
 Glover, F., Kochenberger, G. A. et al.
 \textit{Handbook of Metaheuristics}.
 Kluwer Academic Publishers
-
-\bibitem{executiontime}
-\textit{Stack Overflow --- Execution time of a C program}. \\
-\tiny
-\texttt{\url{http://stackoverflow.com/questions/5248915/execution-time-of-c-program}}
-\normalsize
 
 \end{thebibliography}
 

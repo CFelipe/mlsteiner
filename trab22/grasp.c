@@ -6,18 +6,25 @@
 #include <unistd.h>
 #include "common.c"
 
-int debug = 0;
+bool debug = 0;
+bool track = 0;
+clock_t init_clock = 0;
+clock_t count_zero = 0;
+double construct_time = 0;
+double local_time = 0;
+double total_time = 0;
 
 void construct(int size, int graph[size][size], int colors, int col[colors], int iteration) {
     /* Etapa de construção do GRASP */
+    int i, j;
 
     int col2[colors];
     int rcl[colors];
     int alpha = 0;
-    for(int i = 0; i < colors; ++i) { rcl[i] = 0; }
+    for(i = 0; i < colors; ++i) { rcl[i] = 0; }
 
     if(iteration > 2) {
-        for(int i = 0; i < colors; ++i) { rcl[i] = 1; ++alpha; }
+        for(i = 0; i < colors; ++i) { rcl[i] = 1; ++alpha; }
         col[rand() % colors] = 1;
     }
 
@@ -25,13 +32,13 @@ void construct(int size, int graph[size][size], int colors, int col[colors], int
         // Adicionar candidatos que minimizam comp(c)
         int comp_val;
         int comp_min = size;
-        for(int i = 0; i < colors; ++i) {
-            for(int j = 0; j < colors; ++j) { col2[j] = col[j]; }
+        for(i = 0; i < colors; ++i) {
+            for(j = 0; j < colors; ++j) { col2[j] = col[j]; }
             col2[i] = 1;
             comp_val = comp(size, graph, colors, col2);
             if(comp_val < comp_min) {
                 comp_min = comp_val;
-                for(int j = 0; j < colors; ++j) { rcl[j] = 0; }
+                for(j = 0; j < colors; ++j) { rcl[j] = 0; }
                 rcl[0] = i;
                 alpha = 1;
             } else if(comp_val == comp_min) {
@@ -49,25 +56,23 @@ void grasp(int size, int graph[size][size], int colors, int col[colors], int col
 
     int iteration = 1;
     int no_improv = 0;
+    int i, j;
 
     while(no_improv < 3) {
-        //printf("---\n");
         if(debug) printf("no_improv: %i (%i)\n", no_improv, card(colors, col_star));
-        for(int i = 0; i < colors; ++i) { col[i] = 0; }
+        for(i = 0; i < colors; ++i) { col[i] = 0; }
+        count_zero = clock();
         construct(size, graph, colors, col, iteration);
-        //vns(size, graph, colors, col);
+        construct_time += (double) (clock() - count_zero) / CLOCKS_PER_SEC;
+        count_zero = clock();
         local(size, graph, colors, col);
+        local_time += (double) (clock() - count_zero) / CLOCKS_PER_SEC;
         if(card(colors, col) < card(colors, col_star)) {
-            for(int j = 0; j < colors; ++j) { col_star[j] = col[j]; }
+            for(j = 0; j < colors; ++j) { col_star[j] = col[j]; }
             no_improv = 0;
         } else {
             ++no_improv;
         }
-        /*
-        for(int i = 0; i < colors; ++i) { printf("%i | ", col[i]); }
-        printf("\n");
-        */
-        //printf("it sol card: %i\n", card(colors, col));
 
         ++iteration;
     }
@@ -78,8 +83,9 @@ int main(int argc, char **argv) {
     int size, colors, c;
     bool plot = 0;
     char* input_file = NULL;
+    int i, j;
 
-    while((c = getopt(argc, argv, "f:dp")) != -1) {
+    while((c = getopt(argc, argv, "f:dpt")) != -1) {
         switch (c) {
             case 'f':
                 input_file = optarg;
@@ -90,7 +96,9 @@ int main(int argc, char **argv) {
             case 'p':
                 plot = 1;
                 break;
-            return 1;
+            case 't':
+                track = 1;
+                break;
             case '?':
                 if (optopt == 'f') {
                     fprintf (stderr, "A opção -%c requer um nome de arquivo.\n", optopt);
@@ -108,7 +116,7 @@ int main(int argc, char **argv) {
     FILE* fp;
     if((fp = fopen(input_file, "r")) == 0){
         printf("Arquivo não informado ou erro na leitura\n");
-        printf("Formato esperado: -f [nome do arquivo] -dp\n");
+        printf("Formato esperado: -f [nome do arquivo] -dpt\n");
         exit(1);
     }
 
@@ -122,8 +130,8 @@ int main(int argc, char **argv) {
 
     int count_edges = 0;
     // Lê grafo do arquivo
-    for(int i = 0; i < size; ++i) {
-        for(int j = 0; j < size; ++j) {
+    for(i = 0; i < size; ++i) {
+        for(j = 0; j < size; ++j) {
             fscanf(fp, "%i", &graph[i][j]);
             if((j > i && graph[i][j] != -1)) {
                 ++count_edges;
@@ -137,7 +145,7 @@ int main(int argc, char **argv) {
         printf("edges: %i\n", count_edges);
     }
 
-    for(int i = 0; i < colors; ++i) {
+    for(i = 0; i < colors; ++i) {
         col[i] = 0;
         col_star[i] = 1;
     }
@@ -151,6 +159,10 @@ int main(int argc, char **argv) {
     clock_t begin = clock();
 
     grasp(size, graph, colors, col, col_star);
+
+    // Clock final para tempo total do algoritmo
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
     if(debug) {
         printf("---\n");
@@ -166,7 +178,7 @@ int main(int argc, char **argv) {
 
     int span[size];
     int visited[size];
-    for(int i = 0; i < size; ++i) {
+    for(i = 0; i < size; ++i) {
         span[i] = -1;
         visited[i] = 0;
     }
@@ -175,9 +187,11 @@ int main(int argc, char **argv) {
     span[0] = 0;
     dfs2(size, graph, colors, col_star, visited, span, 0);
 
-    // Clock final para tempo total do algoritmo
-    clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    if(track) {
+        printf("total construct time: %fms\n", construct_time * 1000);
+        printf("total local search time: %fms\n", local_time * 1000);
+    }
+
     if(debug) {
         printf("time: %fms\n", time_spent * 1000);
     } else {
